@@ -1,19 +1,20 @@
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.FlowLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 public class GamePanel extends JPanel {
+	private final int NUM = 10;
 	private JTextField input = new JTextField(40);
-	private JLabel text = new JLabel("타이핑해보세요"); 
 	private ScorePanel scorePanel = null;
 	private EditPanel editPanel = null;
-	private TextSource textSource = new TextSource(); // 단어 벡터 생성
+
+	private final Enemy[] enemys = new Enemy[NUM];
 	
 	public GamePanel(ScorePanel scorePanel, EditPanel editPanel) {
 		this.scorePanel = scorePanel;
@@ -22,36 +23,69 @@ public class GamePanel extends JPanel {
 		setLayout(new BorderLayout());
 		add(new GameGroundPanel(), BorderLayout.CENTER);
 		add(new InputPanel(), BorderLayout.SOUTH);
-		input.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JTextField t = (JTextField)(e.getSource());
-				String inWord = t.getText();
-				if(text.getText().equals(inWord)) { // 맞추기 성공
-					// 점수 올리기
-					scorePanel.increase();
-					startGame();
-					
-					//input 창 지우기
-					t.setText("");
-				}
-			}
-		});
+
 	}
-	
+
 	public void startGame() {
-		// 단어 한 개 선택
-		String newWord = textSource.get();
-		text.setText(newWord);
-		text.setBackground(Color.GREEN);
-		text.setOpaque(true);
+
+
 	}
+
+
 	
 	class GameGroundPanel extends JPanel {
 		public GameGroundPanel() {
 			setLayout(null);
-			text.setSize(100, 30);
-			text.setLocation(100,  10);
-			add(text);
+			this.addComponentListener(new ComponentAdapter() {
+				@Override
+				public void componentResized(ComponentEvent e) {
+					makeEnemies();
+					input.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							JTextField t = (JTextField)(e.getSource());
+							String inWord = t.getText();
+							for(int i = 0; i < NUM; i++) {
+								if(enemys[i].getText().equals(inWord)) {
+									remove(enemys[i]);
+									GameGroundPanel.this.revalidate();
+									GameGroundPanel.this.repaint();
+									scorePanel.increase();
+									t.setText("");
+									makeEnemy(i);
+								}
+							}
+						}
+					});
+					GamePanel.this.removeComponentListener(this);
+				}
+			});
+
+		}
+
+		public void makeEnemy(int idx) {
+			enemys[idx] = new Enemy((int)(Math.random()*(getWidth()-100)), 0, 1, 50);
+			add(enemys[idx]);
+			EnemyThread th = new EnemyThread(enemys[idx], this, 3000, 500*idx);
+			th.start();
+		}
+
+
+		public void makeEnemies() {
+			for(int i = 0; i < NUM; i++) {
+				makeEnemy(i);
+			}
+		}
+
+		public void paintComponent(Graphics g) {
+			super.paintComponent(g);
+
+			for(int i = 0; i < NUM; i++) {
+				//System.out.println(snows[i].getX() + " " + snows[i].getY());
+				g.setColor(enemys[i].getAttacking() ? Color.RED : Color.CYAN);
+				if(enemys[i].isVisible())
+					g.fillOval(enemys[i].getX(), enemys[i].getY()+24, 10, 10);
+			}
+
 		}
 	}
 	
