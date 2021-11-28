@@ -7,6 +7,7 @@ public class Enemy extends JLabel {
     private int atkDelay; // 공격 속도 딜레이
     private int delay; // 이동 속도 딜레이
     private boolean attacking = false; // 공격 상태
+    private boolean alive = true; // 살아 있는지
 
     public Enemy(int x, int y, int atk, int atkDelay, int delay) {
         setLocation(x, y);
@@ -38,5 +39,13 @@ public class Enemy extends JLabel {
 
     public boolean getAttacking() {
         return attacking;
+    }
+
+    public void setAlive(boolean alive) {
+        this.alive = alive;
+    }
+
+    public boolean getAlive() {
+        return alive;
     }
 }

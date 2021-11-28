@@ -9,7 +9,7 @@ public class ScorePanel extends JPanel {
 	private JLabel scoreLabel = new JLabel(Integer.toString(score));
 	
 	public ScorePanel() {
-		this.setBackground(Color.YELLOW);
+		this.setBackground(Color.GRAY);
 		setLayout(null);
 		
 		textLabel.setSize(50, 20);

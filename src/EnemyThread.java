@@ -1,13 +1,13 @@
 import javax.swing.*;
 
 public class EnemyThread extends Thread{
-    private GamePanel panel;
+    private GamePanel.GameGroundPanel panel;
     private Enemy enemy;
     //private int delay;
     private int respawnDelay;
     private int spawnDelay;
 
-    public EnemyThread(Enemy enemy, GamePanel panel, int respawnDelay, int spawnDelay) {
+    public EnemyThread(Enemy enemy, GamePanel.GameGroundPanel panel, int respawnDelay, int spawnDelay) {
         this.enemy = enemy;
         this.panel = panel;
         this.respawnDelay = respawnDelay;
@@ -22,18 +22,15 @@ public class EnemyThread extends Thread{
             enemy.setVisible(true);
 
             while (true) {
-                if (enemy.getAttacking()) {
-                    panel.setCastleHealth(panel.getCastleHealth() - enemy.getAtk());
-                    System.out.println(panel.getCastleHealth());
-                    panel.updateCastleHealthLabel();
+                if (enemy.getAttacking()) { // 공격상태일때
+                    if(enemy.getAlive()) {
+                        panel.setCastleHealth(panel.getCastleHealth() - enemy.getAtk());
+                        panel.updateCastleHealthLabel();
+                    }
                     Thread.sleep(enemy.getAtkDelay());
-                } else if (!enemy.getAttacking() && enemy.getY() >= panel.getHeight()-40) {
+                } else if (!enemy.getAttacking() && enemy.getY() >= panel.getHeight()-40) { // 끝까지 갔을 때
                     enemy.setAttacking(true);
-//                    enemy.setVisible(false);
-//                    Thread.sleep((long) (respawnDelay * ((double) (Math.random() * 4.0) + 8)));
-//                    enemy.setLocation((int) (Math.random() * panel.getWidth()), 0);
-//                    enemy.setVisible(true);
-                } else {
+                } else { // 이동중
                     enemy.setLocation(enemy.getX(), enemy.getY() + 1);
                     Thread.sleep(enemy.getDelay());
                 }
