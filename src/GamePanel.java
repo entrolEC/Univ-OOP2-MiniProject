@@ -10,9 +10,11 @@ import javax.swing.JTextField;
 
 public class GamePanel extends JPanel {
 	private final int NUM = 10;
-	private JTextField input = new JTextField(40);
+	private JTextField input = new JTextField(30);
 	private ScorePanel scorePanel = null;
 	private EditPanel editPanel = null;
+	private Castle castle = new Castle(100);
+	private JLabel castleHealthLabel = new JLabel(Integer.toString(castle.getHealth()));
 
 	private final Enemy[] enemys = new Enemy[NUM];
 	
@@ -63,9 +65,9 @@ public class GamePanel extends JPanel {
 		}
 
 		public void makeEnemy(int idx) {
-			enemys[idx] = new Enemy((int)(Math.random()*(getWidth()-100)), 0, 1, 50);
+			enemys[idx] = new Enemy((int)(Math.random()*(getWidth()-100)), 0, 1, 100, 50);
 			add(enemys[idx]);
-			EnemyThread th = new EnemyThread(enemys[idx], this, 3000, 500*idx);
+			EnemyThread th = new EnemyThread(enemys[idx], GamePanel.this, 3000, 500*idx);
 			th.start();
 		}
 
@@ -87,6 +89,8 @@ public class GamePanel extends JPanel {
 			}
 
 		}
+
+
 	}
 	
 	class InputPanel extends JPanel {
@@ -94,7 +98,20 @@ public class GamePanel extends JPanel {
 			setLayout(new FlowLayout());
 			this.setBackground(Color.CYAN);
 			add(input);
+			add(castleHealthLabel);
 		}
+	}
+
+	public int getCastleHealth() {
+		return castle.getHealth();
+	}
+
+	public void setCastleHealth(int health) {
+		castle.setHealth(health);
+	}
+
+	public void updateCastleHealthLabel() {
+		castleHealthLabel.setText(Integer.toString(getCastleHealth()));
 	}
 
 }
