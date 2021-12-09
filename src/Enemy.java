@@ -21,6 +21,18 @@ public class Enemy extends JLabel {
         this.setOpaque(true);
     }
 
+    public Enemy(Enemy enemy) {
+        setLocation(enemy.getX(), enemy.getY());
+        setText(enemy.getText());
+        this.atk = enemy.getAtk();
+        this.atkDelay = enemy.getAtkDelay();
+        this.delay = enemy.getDelay();
+        this.setSize(100,20);
+        this.setForeground(Color.GREEN);
+        this.setBackground(Color.BLACK);
+        this.setOpaque(true);
+    }
+
     public int getDelay() {
         return delay;
     }

@@ -7,6 +7,10 @@ import java.awt.event.ComponentEvent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 
 public class GamePanel extends JPanel {
 	private final int NUM = 10;
@@ -16,6 +20,7 @@ public class GamePanel extends JPanel {
 	private GameGroundPanel gameGroundPanel = new GameGroundPanel();
 	private Castle castle = new Castle(100);
 	private JLabel castleHealthLabel = new JLabel(Integer.toString(castle.getHealth()));
+	private Enemy target;
 
 	private final Enemy[] enemys = new Enemy[NUM];
 	
@@ -44,6 +49,8 @@ public class GamePanel extends JPanel {
 						public void actionPerformed(ActionEvent e) {
 							JTextField t = (JTextField)(e.getSource());
 							String inWord = t.getText();
+							t.setText("");
+							target = new Enemy(target);
 							for(int i = 0; i < NUM; i++) {
 								if(enemys[i].getText().equals(inWord)) {
 									enemys[i].setAlive(false);
@@ -51,7 +58,6 @@ public class GamePanel extends JPanel {
 									GameGroundPanel.this.revalidate();
 									GameGroundPanel.this.repaint();
 									scorePanel.increase();
-									t.setText("");
 									makeEnemy(i);
 								}
 							}
@@ -103,21 +109,25 @@ public class GamePanel extends JPanel {
 					g.fillOval(enemys[i].getX(), enemys[i].getY()+24, 10, 10);
 			}
 
-			drawAim((Graphics2D) g);
+			if(target!=null) {
+				drawAim((Graphics2D) g);
+			}
 		}
 
 		private void drawAim(Graphics2D g2) {
-			int x = 50;
-			int y = 50;
-			int centerX = 75;
-			int centerY = 75;
+
 			int width = 50;
 			int height = 50;
+			int x = target.getX() - width/2 + 4;
+			int y = target.getY() - height/2 + 24 + 4;
+			int centerX = x+width/2;
+			int centerY = y+height/2;
+
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g2.setColor(Color.black);
 			g2.setStroke(new BasicStroke(2));
-			g2.drawOval(x, x, width, height);
-			g2.drawOval(x+15, x+15, width/5*2, height/5*2);
+			g2.drawOval(x, y, width, height);
+			g2.drawOval(x+15, y+15, width/5*2, height/5*2);
 			g2.setColor(new Color(220,0,0));
 			g2.setStroke(new BasicStroke(2));
 			g2.drawLine(x-4, centerY, centerX-4, centerY);
@@ -131,8 +141,45 @@ public class GamePanel extends JPanel {
 		public InputPanel() {
 			setLayout(new FlowLayout());
 			this.setBackground(Color.DARK_GRAY);
+
+			input.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					Document document = e.getDocument();
+					try {
+						String inputText = document.getText(0, document.getLength()); // 우선 aim객체 없이 메인스레드에서 검색연선 수행
+						searchTarget(inputText);
+						System.out.println(document.getText(0, document.getLength()));
+					} catch (BadLocationException ex) {
+						ex.printStackTrace();
+					}
+				}
+
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+
+				}
+
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+
+
+				}
+			});
+
 			add(input);
 		}
+
+		public void searchTarget(String inputText) {
+			for(Enemy enemy : enemys) {
+				if(enemy == null) continue;
+				if(enemy.getAlive() && enemy.isVisible() && enemy.getText().substring(0, Math.min(enemy.getText().length(), inputText.length())).equals(inputText)) {
+					target = enemy;
+					break;
+				}
+			}
+		}
+
 	}
 
 }
