@@ -33,6 +33,13 @@ public class Enemy extends JLabel {
         this.setOpaque(true);
     }
 
+    public void draw(Graphics g) {
+        //super.paintComponent(g);
+        g.setColor(attacking ? Color.RED : Color.CYAN);
+        if(isVisible())
+            g.fillOval(getX(), getY()+24, 10, 10);
+    }
+
     public int getDelay() {
         return delay;
     }
