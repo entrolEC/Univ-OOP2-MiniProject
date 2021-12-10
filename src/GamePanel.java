@@ -47,6 +47,8 @@ public class GamePanel extends JPanel {
 			this.addComponentListener(new ComponentAdapter() {
 				@Override
 				public void componentResized(ComponentEvent e) {
+					System.out.println(getWidth()/2-25);
+					System.out.println(getHeight());
 					makeEnemies();
 					input.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
@@ -120,6 +122,10 @@ public class GamePanel extends JPanel {
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
 
+			if((combo+1)%1==0) {
+				aim.drawBeam(g, getWidth()/2-25, getHeight());
+			}
+
 			for(int i = 0; i < NUM; i++) {
 				if(enemys[i] == null) continue;
 
@@ -131,6 +137,9 @@ public class GamePanel extends JPanel {
 			}
 
 			aim.paintComponent((Graphics2D) g);
+
+			g.setColor(Color.ORANGE);
+			g.fillOval(getWidth()/2-25, getHeight()-25, 50, 50);
 		}
 	}
 	

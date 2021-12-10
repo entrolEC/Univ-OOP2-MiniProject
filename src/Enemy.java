@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.EtchedBorder;
 import java.awt.*;
 
 public class Enemy extends JLabel {
@@ -19,6 +21,9 @@ public class Enemy extends JLabel {
         this.setForeground(Color.GREEN);
         this.setBackground(Color.BLACK);
         this.setOpaque(true);
+        setBorder(BorderFactory.createLineBorder(Color.magenta));
+
+
     }
 
     public Enemy(Enemy enemy) {
@@ -31,6 +36,7 @@ public class Enemy extends JLabel {
         this.setForeground(Color.GREEN);
         this.setBackground(Color.BLACK);
         this.setOpaque(true);
+        setBorder(BorderFactory.createLineBorder(Color.magenta));
     }
 
     public void draw(Graphics g) {
