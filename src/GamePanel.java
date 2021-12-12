@@ -21,8 +21,10 @@ public class GamePanel extends JPanel {
 	private GameGroundPanel gameGroundPanel = new GameGroundPanel();
 	private Castle castle = new Castle(100);
 	private JLabel castleHealthLabel = new JLabel(Integer.toString(castle.getHealth()));
+	private JLabel scoreLabel = new JLabel("0");
 	private Aim aim = new Aim();
 	private int combo = 0;
+	private int score = 0;
 
 	private final Enemy[] enemys = new Enemy[NUM];
 	private ArrayList<Combo> combos = new ArrayList<>();
@@ -34,10 +36,6 @@ public class GamePanel extends JPanel {
 		setLayout(new BorderLayout());
 		add(gameGroundPanel, BorderLayout.CENTER);
 		add(new InputPanel(), BorderLayout.SOUTH);
-
-		castleHealthLabel.setSize(100, 20);
-		castleHealthLabel.setLocation(70, 100);
-		scorePanel.add(castleHealthLabel);
 
 	}
 	
@@ -60,17 +58,31 @@ public class GamePanel extends JPanel {
 
 							boolean flag = false;
 							for(int i = 0; i < NUM; i++) {
-								if(enemys[i].getText().equals(inWord)) {
+								if(enemys[i].getText().equals(inWord) && enemys[i].isVisible()) {
 									flag = true;
 									Combo c = new Combo(aim.getTarget().getX()+((int)(Math.random()*60))-30, aim.getTarget().getY()-20, Integer.toString(++combo)+" Combo!", Color.BLUE);
 									combos.add(c);
 									new Thread(new ComboRunnable(c, GameGroundPanel.this)).start();
-									enemys[i].setAlive(false);
-									remove(enemys[i]);
+
+									if(combo%1==0) {
+										for(int j = 0; j < NUM; j++) {
+											if(enemys[j].isVisible() && beamJudge(enemys[j].getX(), enemys[j].getY())) {
+												enemys[j].setAlive(false);
+												remove(enemys[j]);
+
+												addScore(10);
+												makeEnemy(j);
+											}
+										}
+									} else {
+										enemys[i].setAlive(false);
+										remove(enemys[i]);
+										addScore(10);
+										makeEnemy(i);
+									}
 									GameGroundPanel.this.revalidate();
 									GameGroundPanel.this.repaint();
-									scorePanel.increase();
-									makeEnemy(i);
+									break;
 								}
 							}
 
@@ -89,7 +101,43 @@ public class GamePanel extends JPanel {
 
 		}
 
+		public void addScore(int n) {
+			score += n;
+			scoreLabel.setText(Integer.toString(score));
+		}
 
+		public boolean beamJudge(int ex, int ey) {
+			double x1 = getWidth()/2;
+			double y1 = getHeight();
+			double x2 = x1-25;
+			double y2 = y1;
+			double x3 = x1+25;
+			double y3 = y1;
+			double centerX = aim.getTarget().getX()+5;
+			double centerY = aim.getTarget().getY()+29;
+
+			double dx = centerX-x1;
+			double dy = y1-centerY;
+
+			double endX1 = ((centerX-x1)/(centerY-y1))*(-y1)+x1;
+			double alpha = ((dy) / (Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2)))) * 25;
+			double beta = ((dx) / (Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2)))) * 25;
+
+			double targetX2 = centerX - alpha;
+			double targetY2 = centerY - beta;
+			double targetX3 = centerX + alpha;
+			double targetY3 = centerY + beta;
+			if(targetY2 > y1) targetY2 = y1;
+			if(targetY3 > y1) targetY3 = y1;
+
+			double endX2 = ((targetX2-x2)/(targetY2-y2))*(ey-y2)+x2;
+			double endX3 = ((targetX3-x3)/(targetY3-y3))*(ey-y3)+x3;
+
+			if(centerY - beta > y1) return ex-100 <= endX3;
+			if(centerY + beta > y1) return endX2 <= ex+100;
+			return endX2 <= ex && ex <= endX3;
+
+		}
 
 		public void makeEnemy(int idx) {
 			enemys[idx] = new Enemy((int)(Math.random()*(getWidth()-100)), 0, 1, 300, 50);
@@ -111,9 +159,6 @@ public class GamePanel extends JPanel {
 
 		public void setCastleHealth(int health) {
 			castle.setHealth(health);
-		}
-
-		public void updateCastleHealthLabel() {
 			castleHealthLabel.setText(Integer.toString(getCastleHealth()));
 		}
 
@@ -123,7 +168,7 @@ public class GamePanel extends JPanel {
 			super.paintComponent(g);
 
 			if((combo+1)%1==0) {
-				aim.drawBeam(g, getWidth()/2-25, getHeight());
+				aim.drawBeam(g, getWidth()/2, getHeight());
 			}
 
 			for(int i = 0; i < NUM; i++) {
@@ -173,7 +218,16 @@ public class GamePanel extends JPanel {
 				}
 			});
 
+			castleHealthLabel.setForeground(Color.lightGray);
+			add(castleHealthLabel);
 			add(input);
+			JLabel l = new JLabel("Á¡¼ö ");
+			l.setForeground(Color.lightGray);
+			add(l);
+			scoreLabel.setForeground(Color.lightGray);
+			add(scoreLabel);
+
+
 		}
 
 		public void searchTarget(String inputText) {

@@ -25,7 +25,6 @@ public class EnemyThread extends Thread{
                 if (enemy.getAttacking()) { // 공격상태일때
                     if(enemy.getAlive()) {
                         panel.setCastleHealth(panel.getCastleHealth() - enemy.getAtk());
-                        panel.updateCastleHealthLabel();
                     }
                     Thread.sleep(enemy.getAtkDelay());
                 } else if (!enemy.getAttacking() && enemy.getY() >= panel.getHeight()-40) { // 끝까지 갔을 때

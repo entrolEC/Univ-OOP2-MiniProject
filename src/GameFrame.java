@@ -11,20 +11,24 @@ public class GameFrame extends JFrame {
 	private ScorePanel scorePanel = new ScorePanel();
 	private EditPanel editPanel = new EditPanel();
 	private GamePanel gamePanel = new GamePanel(scorePanel, editPanel);
-
+	private MenuPanel menuPanel = new MenuPanel();
 	private ImageIcon pressedIcon = new ImageIcon("pressed.gif");
 	private ImageIcon overIcon = new ImageIcon("over.gif");
 	
 	private JMenuItem startItem = new JMenuItem("start");
 	private JMenuItem stopItem = new JMenuItem("stop");
 
+	JSplitPane hPane = new JSplitPane();
+	JSplitPane pPane = new JSplitPane();
 	
 	public GameFrame() {
 		setTitle("타이핑 게임");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(800, 600);
 
-		add(new MenuPanel());
+		splitPane2();
+
+		//add(new MenuPanel());
 
 		//splitPane(); // JSplitPane을 생성하여 컨텐트팬의 CENTER에 부착
 		//makeMenu();
@@ -35,14 +39,24 @@ public class GameFrame extends JFrame {
 	}
 
 	private void splitPane() {
-		JSplitPane hPane = new JSplitPane();
 		getContentPane().add(hPane, BorderLayout.CENTER);
 		hPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
 		hPane.setDividerLocation(550);
 		hPane.setEnabled(false);
 		hPane.setLeftComponent(gamePanel);
 
-		JSplitPane pPane = new JSplitPane();
+
+	}
+
+	private void splitPane2() {
+
+		getContentPane().add(hPane, BorderLayout.CENTER);
+		hPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+		hPane.setDividerLocation(550);
+		hPane.setEnabled(false);
+		hPane.setLeftComponent(menuPanel);
+
+
 		pPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 		pPane.setDividerLocation(300);
 		pPane.setTopComponent(scorePanel);
@@ -77,6 +91,8 @@ public class GameFrame extends JFrame {
 			this.addComponentListener(new ComponentAdapter() {
 				@Override
 				public void componentResized(ComponentEvent e) {
+
+
 					JButton startBtn = new JButton(normalIcon);
 					startBtn.setOpaque(false);
 					startBtn.setBorderPainted(false);
@@ -100,7 +116,8 @@ public class GameFrame extends JFrame {
 				GameFrame.this.remove(MenuPanel.this);
 				GameFrame.this.revalidate();
 				GameFrame.this.repaint();
-				splitPane();
+				getContentPane().removeAll();
+				getContentPane().add(gamePanel);
 				GameFrame.this.revalidate();
 				GameFrame.this.repaint();
 

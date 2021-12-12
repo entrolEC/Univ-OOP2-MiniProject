@@ -18,21 +18,34 @@ public class Aim {
 
     public void drawBeam(Graphics g, double x1, double y1) {
         if(target == null) return;
-        double x3 = x1+50;
+        double x2 = x1-25;
+        double y2 = y1;
+        double x3 = x1+25;
         double y3 = y1;
-        double x2 = target.getX();
-        double y2 = target.getY()+29;
-        double x4 = target.getX() + 10;
-        double y4 = target.getY()+29;
         double centerX = target.getX()+5;
         double centerY = target.getY()+29;
 
-        double endX1 = ((centerX-25-x1)/(centerY-y1))*(-y1)+x1;
-        double endX2 = ((centerX+25-x3)/(centerY-y3))*(-y3)+x3;
+        double dx = centerX-x1;
+        double dy = y1-centerY;
 
-        g.drawLine((int)endX1, 0, (int)x1, (int)y1);
-        //g.drawLine(1000, 0, (int)x1, (int)y1+25);
-        g.drawLine((int)endX2, 0, (int)x3, (int)y3);
+        double endX1 = ((centerX-x1)/(centerY-y1))*(-y1)+x1;
+        double alpha = ((dy) / (Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2)))) * 25;
+        double beta = ((dx) / (Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2)))) * 25;
+
+        double targetX2 = centerX - alpha;
+        double targetY2 = centerY - beta;
+        double targetX3 = centerX + alpha;
+        double targetY3 = centerY + beta;
+        if(targetY2 > y1) targetY2 = y1;
+        if(targetY3 > y1) targetY3 = y1;
+
+        double endX2 = ((targetX2-x2)/(targetY2-y2))*(-y2)+x2;
+        double endX3 = ((targetX3-x3)/(targetY3-y3))*(-y3)+x3;
+
+        //g.drawLine((int)endX1, (int)(0), (int)x1, (int)y1);
+        g.drawLine((int)endX2, (int)(0), (int)x2, (int)y2);
+        g.drawLine((int)endX3, (int)(0), (int)x3, (int)y3);
+        //.drawLine((int)(endX1+alpha), (int)(0), (int)x3, (int)y3);
     }
 
     public void paintComponent(Graphics2D g2) {

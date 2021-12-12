@@ -19,9 +19,6 @@ public class TextSource {
 		} catch (IOException e) {
 			System.out.println("파일이 없습니다.");
 		}
-
-
-
 	}
 	
 	public String get() {
