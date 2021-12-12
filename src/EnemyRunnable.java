@@ -1,13 +1,13 @@
 import javax.swing.*;
 
-public class EnemyThread extends Thread{
+public class EnemyRunnable implements Runnable{
     private GamePanel.GameGroundPanel panel;
     private Enemy enemy;
     //private int delay;
     private int respawnDelay;
     private int spawnDelay;
 
-    public EnemyThread(Enemy enemy, GamePanel.GameGroundPanel panel, int respawnDelay, int spawnDelay) {
+    public EnemyRunnable(Enemy enemy, GamePanel.GameGroundPanel panel, int respawnDelay, int spawnDelay) {
         this.enemy = enemy;
         this.panel = panel;
         this.respawnDelay = respawnDelay;
@@ -27,7 +27,7 @@ public class EnemyThread extends Thread{
                         panel.setCastleHealth(panel.getCastleHealth() - enemy.getAtk());
                     }
                     Thread.sleep(enemy.getAtkDelay());
-                } else if (!enemy.getAttacking() && enemy.getY() >= panel.getHeight()-40) { // 끝까지 갔을 때
+                } else if (!enemy.getAttacking() && enemy.getY() >= panel.getHeight()-70) { // 끝까지 갔을 때
                     enemy.setAttacking(true);
                 } else { // 이동중
                     enemy.setLocation(enemy.getX(), enemy.getY() + 1);

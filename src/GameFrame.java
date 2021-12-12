@@ -7,11 +7,13 @@ import java.awt.event.ComponentEvent;
 import javax.swing.*;
 
 public class GameFrame extends JFrame {
-	// 버튼을 위해 이미지 로딩 하여 아이콘 만들기
-	private ScorePanel scorePanel = new ScorePanel();
-	private EditPanel editPanel = new EditPanel();
-	private GamePanel gamePanel = new GamePanel(scorePanel, editPanel);
+	private TextSource textSource = new TextSource("words.txt");
+	private RecordSource recordSource = new RecordSource("records.dat");
+	private ScorePanel scorePanel = new ScorePanel(recordSource);
+	private EditPanel editPanel = new EditPanel(textSource);
+	private GamePanel gamePanel = new GamePanel(scorePanel, editPanel, textSource);
 	private MenuPanel menuPanel = new MenuPanel();
+
 	private ImageIcon pressedIcon = new ImageIcon("pressed.gif");
 	private ImageIcon overIcon = new ImageIcon("over.gif");
 	
@@ -27,7 +29,7 @@ public class GameFrame extends JFrame {
 		setSize(800, 600);
 
 		splitPane2();
-
+		//recordSource.addRecords(new User("test", 100));
 		//add(new MenuPanel());
 
 		//splitPane(); // JSplitPane을 생성하여 컨텐트팬의 CENTER에 부착
@@ -36,6 +38,23 @@ public class GameFrame extends JFrame {
 		//makeToolBar();
 		setResizable(false);
 		setVisible(true);
+	}
+
+	public void reset() {
+		gamePanel = new GamePanel(scorePanel, editPanel, textSource);
+		getContentPane().removeAll();
+		splitPane2();
+		scorePanel.update();
+		revalidate();
+		repaint();
+	}
+
+	public void gameOver(int score) {
+		gamePanel = new GamePanel(scorePanel, editPanel, textSource);
+		getContentPane().removeAll();
+		getContentPane().add(new GameOverPanel(score, recordSource));
+		revalidate();
+		repaint();
 	}
 
 	private void splitPane() {
@@ -114,8 +133,6 @@ public class GameFrame extends JFrame {
 		private class StartAction implements ActionListener {
 			public void actionPerformed(ActionEvent e) {
 				GameFrame.this.remove(MenuPanel.this);
-				GameFrame.this.revalidate();
-				GameFrame.this.repaint();
 				getContentPane().removeAll();
 				getContentPane().add(gamePanel);
 				GameFrame.this.revalidate();

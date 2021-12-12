@@ -3,8 +3,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -14,7 +20,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 public class GamePanel extends JPanel {
-	private final int NUM = 10;
+	private final int NUM = 15;
+	private TextSource textSource;
 	private JTextField input = new JTextField(30);
 	private ScorePanel scorePanel = null;
 	private EditPanel editPanel = null;
@@ -28,10 +35,12 @@ public class GamePanel extends JPanel {
 
 	private final Enemy[] enemys = new Enemy[NUM];
 	private ArrayList<Combo> combos = new ArrayList<>();
+	private ArrayList<Thread> threads = new ArrayList<>();
 	
-	public GamePanel(ScorePanel scorePanel, EditPanel editPanel) {
+	public GamePanel(ScorePanel scorePanel, EditPanel editPanel, TextSource textSource) {
 		this.scorePanel = scorePanel;
 		this.editPanel = editPanel;
+		this.textSource = textSource;
 		
 		setLayout(new BorderLayout());
 		add(gameGroundPanel, BorderLayout.CENTER);
@@ -40,8 +49,19 @@ public class GamePanel extends JPanel {
 	}
 	
 	class GameGroundPanel extends JPanel {
+		private BufferedImage cannonImg;
+		private String[] normalEnemyImgSources = {"normal_enemy1.png", "normal_enemy2.png", "normal_enemy3.png"};
+		private double endX2;
+		private double endX3;
+		private int beamTransparency = 0;
+
 		public GameGroundPanel() {
 			setLayout(null);
+			try {
+				cannonImg = ImageIO.read(new File("cannon.png"));;
+			} catch (IOException e) {
+				System.out.println("cannonImg not found");
+			}
 			this.addComponentListener(new ComponentAdapter() {
 				@Override
 				public void componentResized(ComponentEvent e) {
@@ -64,20 +84,22 @@ public class GamePanel extends JPanel {
 									combos.add(c);
 									new Thread(new ComboRunnable(c, GameGroundPanel.this)).start();
 
-									if(combo%1==0) {
+									if(combo%5==0) {
+										beamTransparency = 255;
+										new Thread(new BeamEffectRunnable(GameGroundPanel.this)).start();
 										for(int j = 0; j < NUM; j++) {
-											if(enemys[j].isVisible() && beamJudge(enemys[j].getX(), enemys[j].getY())) {
+											if(enemys[j].isVisible() && beamJudge(enemys[j].getX(), enemys[j].getY()+30)) {
 												enemys[j].setAlive(false);
 												remove(enemys[j]);
 
-												addScore(10);
+												addScore(10 + combo);
 												makeEnemy(j);
 											}
 										}
 									} else {
 										enemys[i].setAlive(false);
 										remove(enemys[i]);
-										addScore(10);
+										addScore(10 + combo);
 										makeEnemy(i);
 									}
 									GameGroundPanel.this.revalidate();
@@ -94,11 +116,14 @@ public class GamePanel extends JPanel {
 							}
 						}
 					});
-					// ready
 					GameGroundPanel.this.removeComponentListener(this);
 				}
 			});
 
+		}
+
+		public void subBeamTransparency () {
+			beamTransparency -= 5;
 		}
 
 		public void addScore(int n) {
@@ -130,19 +155,20 @@ public class GamePanel extends JPanel {
 			if(targetY2 > y1) targetY2 = y1;
 			if(targetY3 > y1) targetY3 = y1;
 
-			double endX2 = ((targetX2-x2)/(targetY2-y2))*(ey-y2)+x2;
-			double endX3 = ((targetX3-x3)/(targetY3-y3))*(ey-y3)+x3;
+			endX2 = ((targetX2-x2)/(targetY2-y2))*(ey-y2)+x2;
+			endX3 = ((targetX3-x3)/(targetY3-y3))*(ey-y3)+x3;
 
 			if(centerY - beta > y1) return ex-100 <= endX3;
 			if(centerY + beta > y1) return endX2 <= ex+100;
-			return endX2 <= ex && ex <= endX3;
+			return endX2-5 <= ex && ex <= endX3+5;
 
 		}
 
 		public void makeEnemy(int idx) {
-			enemys[idx] = new Enemy((int)(Math.random()*(getWidth()-100)), 0, 1, 300, 50);
+			enemys[idx] = new Enemy((int)(Math.random()*(getWidth()-100)), 0, 1, 300, 50, textSource, normalEnemyImgSources[(int)(Math.random()*3)]);
 			add(enemys[idx]);
-			EnemyThread th = new EnemyThread(enemys[idx], this, 3000, 500*idx);
+			Thread th = new Thread(new EnemyRunnable(enemys[idx], this, 3000, 400*idx));
+			threads.add(th);
 			th.start();
 		}
 
@@ -158,6 +184,12 @@ public class GamePanel extends JPanel {
 		}
 
 		public void setCastleHealth(int health) {
+			if(health <= 0) {
+				System.out.println("gameover");
+				for(Thread th : threads)
+					th.interrupt();
+				((GameFrame)getTopLevelAncestor()).gameOver(score);
+			}
 			castle.setHealth(health);
 			castleHealthLabel.setText(Integer.toString(getCastleHealth()));
 		}
@@ -167,13 +199,22 @@ public class GamePanel extends JPanel {
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
 
-			if((combo+1)%1==0) {
-				aim.drawBeam(g, getWidth()/2, getHeight());
+			g.drawLine(0, getHeight()-40, getWidth(), getHeight()-40);
+
+			g.setColor(Color.red);
+			g.fillRect(0, getHeight()-10, (int)(getWidth() * (double)(castle.getHealth())/100), getHeight());
+
+
+			if(aim.getTarget() != null) beamJudge(0, 0);
+			if((combo+1)%5==0) {
+				aim.drawBeam(g, (int)(getWidth()/2), getHeight(), endX2, endX3);
 			}
+			g.setColor(new Color(255,0,0, beamTransparency));
+			g.fillPolygon(new int[] {getWidth()/2-25, getWidth()/2+26, (int)endX3+1, (int)endX2}, new int[] {getHeight(), getHeight(), 0, 0}, 4);
+			g.setColor(new Color(255,0,0, 255));
 
 			for(int i = 0; i < NUM; i++) {
 				if(enemys[i] == null) continue;
-
 				enemys[i].draw(g);
 			}
 
@@ -183,8 +224,18 @@ public class GamePanel extends JPanel {
 
 			aim.paintComponent((Graphics2D) g);
 
-			g.setColor(Color.ORANGE);
-			g.fillOval(getWidth()/2-25, getHeight()-25, 50, 50);
+			if(aim.getTarget() == null) return;
+			int dx = aim.getTarget().getX() - getWidth()/2;
+			int dy = getHeight() - aim.getTarget().getY();
+
+			System.out.println();
+			double rotationRequired = Math.toRadians (-Math.atan2(dy, dx) * (180 / Math.PI) + 90);
+			double locationX = cannonImg.getWidth() / 2;
+			double locationY = cannonImg.getHeight() / 2;
+			AffineTransform tx = AffineTransform.getRotateInstance(rotationRequired, locationX, locationY);
+			AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+
+			g.drawImage(op.filter(cannonImg, null), getWidth()/2-40, getHeight()-60, 80,80,this);
 		}
 	}
 	
@@ -198,7 +249,7 @@ public class GamePanel extends JPanel {
 				public void insertUpdate(DocumentEvent e) {
 					Document document = e.getDocument();
 					try {
-						String inputText = document.getText(0, document.getLength()); // 우선 aim객체 없이 메인스레드에서 검색연선 수행
+						String inputText = document.getText(0, document.getLength());
 						searchTarget(inputText);
 						System.out.println(document.getText(0, document.getLength()));
 					} catch (BadLocationException ex) {
@@ -221,7 +272,7 @@ public class GamePanel extends JPanel {
 			castleHealthLabel.setForeground(Color.lightGray);
 			add(castleHealthLabel);
 			add(input);
-			JLabel l = new JLabel("점수 ");
+			JLabel l = new JLabel("점수");
 			l.setForeground(Color.lightGray);
 			add(l);
 			scoreLabel.setForeground(Color.lightGray);
