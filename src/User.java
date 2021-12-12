@@ -9,6 +9,10 @@ public class User implements Serializable {
         this.score = score;
     }
 
+    public int getScore() {
+        return score;
+    }
+
     public String toString() {
         return name+ " - " + score;
     }

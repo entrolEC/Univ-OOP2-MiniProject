@@ -1,7 +1,5 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Scanner;
-import java.util.Vector;
+import java.util.*;
 
 public class RecordSource {
     private String source;
@@ -21,6 +19,13 @@ public class RecordSource {
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("파일이 없습니다.a");
         }
+        Collections.sort(records, (u1, u2) -> {
+            if(u1.getScore() > u2.getScore()) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
     }
 
     public Vector<User> getRecords() {
@@ -34,6 +39,13 @@ public class RecordSource {
 
     public void addRecords(User user) {
         records.add(user);
+        Collections.sort(records, (u1, u2) -> {
+            if(u1.getScore() > u2.getScore()) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
         saveRecords();
     }
 
@@ -48,4 +60,5 @@ public class RecordSource {
             System.out.println("파일이 없습니다.");
         }
     }
+
 }
