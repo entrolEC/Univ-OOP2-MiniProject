@@ -1,5 +1,3 @@
-import java.awt.*;
-
 public class ComboRunnable implements Runnable{
     private GamePanel.GameGroundPanel panel;
     private Combo combo;

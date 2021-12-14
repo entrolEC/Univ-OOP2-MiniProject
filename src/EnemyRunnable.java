@@ -1,9 +1,6 @@
-import javax.swing.*;
-
 public class EnemyRunnable implements Runnable{
     private GamePanel.GameGroundPanel panel;
     private Enemy enemy;
-    //private int delay;
     private int respawnDelay;
     private int spawnDelay;
 

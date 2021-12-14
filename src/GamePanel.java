@@ -11,16 +11,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 public class GamePanel extends JPanel {
-	private final int NUM = 15;
+	private int NUM;
 	private TextSource textSource;
 	private JTextField input = new JTextField(30);
 	private ScorePanel scorePanel = null;
@@ -30,17 +28,23 @@ public class GamePanel extends JPanel {
 	private JLabel castleHealthLabel = new JLabel(Integer.toString(castle.getHealth()));
 	private JLabel scoreLabel = new JLabel("0");
 	private Aim aim = new Aim();
+	private ImageIcon background;
+	private int difficulty;
 	private int combo = 0;
 	private int score = 0;
 
-	private final Enemy[] enemys = new Enemy[NUM];
+	private Enemy[] enemys;
 	private ArrayList<Combo> combos = new ArrayList<>();
 	private ArrayList<Thread> threads = new ArrayList<>();
 	
-	public GamePanel(ScorePanel scorePanel, EditPanel editPanel, TextSource textSource) {
+	public GamePanel(ScorePanel scorePanel, EditPanel editPanel, TextSource textSource, ImageIcon background, int difficulty) {
 		this.scorePanel = scorePanel;
 		this.editPanel = editPanel;
 		this.textSource = textSource;
+		this.background = background;
+		this.difficulty = difficulty;
+		this.NUM = 8 + difficulty * 2;
+		enemys = new Enemy[NUM];
 		
 		setLayout(new BorderLayout());
 		add(gameGroundPanel, BorderLayout.CENTER);
@@ -160,14 +164,14 @@ public class GamePanel extends JPanel {
 
 			if(centerY - beta > y1) return ex-100 <= endX3;
 			if(centerY + beta > y1) return endX2 <= ex+100;
-			return endX2-5 <= ex && ex <= endX3+5;
+			return endX2-10 <= ex && ex <= endX3+10;
 
 		}
 
 		public void makeEnemy(int idx) {
-			enemys[idx] = new Enemy((int)(Math.random()*(getWidth()-100)), 0, 1, 300, 50, textSource, normalEnemyImgSources[(int)(Math.random()*3)]);
+			enemys[idx] = new Enemy((int)(Math.random()*(getWidth()-100)), 0, 1, 300, 50-difficulty*5, textSource, normalEnemyImgSources[(int)(Math.random()*3)]);
 			add(enemys[idx]);
-			Thread th = new Thread(new EnemyRunnable(enemys[idx], this, 3000, 400*idx));
+			Thread th = new Thread(new EnemyRunnable(enemys[idx], this, 3000-difficulty*500, (400-difficulty*50)*idx));
 			threads.add(th);
 			th.start();
 		}
@@ -199,6 +203,8 @@ public class GamePanel extends JPanel {
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
 
+			g.drawImage(background.getImage(), 0, 0, null);
+
 			g.drawLine(0, getHeight()-40, getWidth(), getHeight()-40);
 
 			g.setColor(Color.red);
@@ -224,18 +230,22 @@ public class GamePanel extends JPanel {
 
 			aim.paintComponent((Graphics2D) g);
 
-			if(aim.getTarget() == null) return;
-			int dx = aim.getTarget().getX() - getWidth()/2;
-			int dy = getHeight() - aim.getTarget().getY();
+			if(aim.getTarget() == null) {
+				g.drawImage(cannonImg, getWidth()/2-40, getHeight()-60, 80,80,this);
+			} else {
+				int dx = aim.getTarget().getX() - getWidth()/2;
+				int dy = getHeight() - aim.getTarget().getY();
 
-			System.out.println();
-			double rotationRequired = Math.toRadians (-Math.atan2(dy, dx) * (180 / Math.PI) + 90);
-			double locationX = cannonImg.getWidth() / 2;
-			double locationY = cannonImg.getHeight() / 2;
-			AffineTransform tx = AffineTransform.getRotateInstance(rotationRequired, locationX, locationY);
-			AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+				System.out.println();
+				double rotationRequired = Math.toRadians (-Math.atan2(dy, dx) * (180 / Math.PI) + 90);
+				double locationX = cannonImg.getWidth() / 2;
+				double locationY = cannonImg.getHeight() / 2;
+				AffineTransform tx = AffineTransform.getRotateInstance(rotationRequired, locationX, locationY);
+				AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
 
-			g.drawImage(op.filter(cannonImg, null), getWidth()/2-40, getHeight()-60, 80,80,this);
+				g.drawImage(op.filter(cannonImg, null), getWidth()/2-40, getHeight()-60, 80,80,this);
+			}
+
 		}
 	}
 	

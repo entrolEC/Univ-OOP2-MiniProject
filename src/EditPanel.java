@@ -22,7 +22,7 @@ public class EditPanel extends JPanel {
 	
 	public EditPanel(TextSource textSource) {
 		this.textSource = textSource;
-		this.setBackground(Color.YELLOW);
+		this.setBackground(Color.DARK_GRAY);
 		this.setLayout(new FlowLayout());
 		list = new JList(textSource.getTexts());
 		scrollpane = new JScrollPane(list);

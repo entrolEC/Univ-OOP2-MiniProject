@@ -23,10 +23,8 @@ public class Aim {
         double x3 = x1+25;
         double y3 = y1;
 
-        //g.drawLine((int)endX1, (int)(0), (int)x1, (int)y1);
         g.drawLine((int)endX2, (int)(0), (int)x2, (int)y2);
         g.drawLine((int)endX3, (int)(0), (int)x3, (int)y3);
-        //.drawLine((int)(endX1+alpha), (int)(0), (int)x3, (int)y3);
     }
 
     public void paintComponent(Graphics2D g2) {

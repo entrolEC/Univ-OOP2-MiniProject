@@ -1,14 +1,11 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 public class Enemy extends JLabel {
-    private TextSource textSource;
     private int atk; // 공격력
     private int atkDelay; // 공격 속도 딜레이
     private int delay; // 이동 속도 딜레이
@@ -17,7 +14,6 @@ public class Enemy extends JLabel {
     private BufferedImage img;
 
     public Enemy(int x, int y, int atk, int atkDelay, int delay, TextSource textSource, String imgSource) {
-        this.textSource = textSource;
         try {
             img = ImageIO.read(new File(imgSource));
         } catch (IOException e) {
@@ -56,7 +52,6 @@ public class Enemy extends JLabel {
         g.setColor(attacking ? Color.RED : Color.CYAN);
         if(isVisible())
             g.drawImage(img, getX()-10, getY()+24, 30, 30, this);
-            //g.fillOval(getX(), getY()+24, 10, 10);
     }
 
     public int getDelay() {
